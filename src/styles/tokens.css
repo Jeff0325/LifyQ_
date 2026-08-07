@@ -1,0 +1,339 @@
+/**
+ * Design tokens — the single source of truth for color, radius, elevation,
+ * type, and motion. See docs/08_Design_System.md. No component should ever
+ * use a raw Tailwind palette utility (bg-indigo-600, text-slate-500, ...);
+ * everything routes through the semantic names defined here.
+ *
+ * Pattern: raw values live on :root / .dark as plain CSS custom properties
+ * (so they can differ per theme), then `@theme inline` maps them into
+ * Tailwind's utility namespace (bg-background, text-foreground, ...).
+ * Static tokens that never change between themes (the brand/accent/neutral
+ * palettes, radius, type scale, motion) are declared directly in `@theme`.
+ */
+
+/* Switches `dark:` variants on a `.dark` class instead of OS media query,
+   so theme is user-controllable (light / dark / system) — see
+   src/hooks/useAppliedTheme.ts and docs/08_Design_System.md §2.4. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Surfaces */
+  --background: #fafafa;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-overlay: rgb(255 255 255 / 0.8);
+
+  /* Borders */
+  --border: #d4d4d4;
+  --border-subtle: #e5e5e5;
+
+  /* Text */
+  --foreground: #171717;
+  --foreground-secondary: #525252;
+  --foreground-tertiary: #737373;
+  --foreground-disabled: #a3a3a3;
+  --foreground-on-brand: #ffffff;
+
+  /* Focus */
+  --ring: #4f46e5;
+
+  /* Status */
+  --success: #16a34a;
+  --success-subtle: #dcfce7;
+  --warning: #d97706;
+  --warning-subtle: #fef3c7;
+  --danger: #dc2626;
+  --danger-subtle: #fee2e2;
+  --info: #2563eb;
+  --info-subtle: #dbeafe;
+
+  /* Module accent hues — one per module color-coding assignment (never
+     assigned per-module directly since two modules can share a hue, e.g.
+     Habits/Finance both "emerald"; components look up their module's hue
+     via src/constants/moduleColors.ts). Home/Analytics/Jarvis reuse the
+     brand palette instead of a dedicated "indigo" hue. */
+  --hue-blue: #2563eb;
+  --hue-blue-subtle: #dbeafe;
+  --hue-purple: #9333ea;
+  --hue-purple-subtle: #f3e8ff;
+  --hue-emerald: #059669;
+  --hue-emerald-subtle: #d1fae5;
+  --hue-sky: #0284c7;
+  --hue-sky-subtle: #e0f2fe;
+  --hue-yellow: #ca8a04;
+  --hue-yellow-subtle: #fef9c3;
+  --hue-slate: #475569;
+  --hue-slate-subtle: #f1f5f9;
+  --hue-orange: #ea580c;
+  --hue-orange-subtle: #ffedd5;
+  --hue-amber: #d97706;
+  --hue-amber-subtle: #fef3c7;
+  --hue-cyan: #0891b2;
+  --hue-cyan-subtle: #cffafe;
+  --hue-green: #16a34a;
+  --hue-green-subtle: #dcfce7;
+  --hue-red: #dc2626;
+  --hue-red-subtle: #fee2e2;
+  --hue-violet: #7c3aed;
+  --hue-violet-subtle: #ede9fe;
+  --hue-rose: #e11d48;
+  --hue-rose-subtle: #ffe4e6;
+  --hue-pink: #db2777;
+  --hue-pink-subtle: #fce7f3;
+  --hue-gray: #4b5563;
+  --hue-gray-subtle: #f3f4f6;
+
+  /* Chart categorical palette — CVD-safe, fixed order, never cycled.
+     Adopted verbatim from the dataviz skill's validated reference palette
+     (light steps) and re-validated against this app's own surfaces. Only
+     slots 1–3 are safe for all-pairs contexts (scatter/bubble/small
+     multiples); all 8 are safe for adjacent-pairs contexts (stacked/bar/
+     line). Slots 3, 4 and 5 sit below 3:1 text contrast on light — pair
+     with a direct label or legend, never color alone. See docs/27. */
+  --chart-1: #2a78d6; /* blue */
+  --chart-2: #eb6834; /* orange */
+  --chart-3: #1baf7a; /* aqua */
+  --chart-4: #eda100; /* yellow */
+  --chart-5: #e87ba4; /* magenta */
+  --chart-6: #008300; /* green */
+  --chart-7: #4a3aa7; /* violet */
+  --chart-8: #e34948; /* red */
+
+  /* Elevation — brand-tinted, per docs/08_Design_System.md §6 */
+  --elevation-1: 0 1px 2px rgb(30 27 75 / 0.06);
+  --elevation-2: 0 4px 12px rgb(30 27 75 / 0.08);
+  --elevation-3: 0 12px 24px rgb(30 27 75 / 0.12);
+  --elevation-4: 0 24px 48px rgb(30 27 75 / 0.16);
+  --elevation-5: 0 32px 64px rgb(30 27 75 / 0.2);
+
+  /* Motion — docs/08_Design_System.md §7 */
+  --duration-fast: 100ms;
+  --duration-base: 180ms;
+  --duration-moderate: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.dark {
+  --background: #0a0a0c;
+  --surface: #171717;
+  --surface-raised: #1f1f22;
+  --surface-overlay: rgb(23 23 23 / 0.75);
+
+  --border: #404040;
+  --border-subtle: #262626;
+
+  --foreground: #fafafa;
+  --foreground-secondary: #a3a3a3;
+  --foreground-tertiary: #737373;
+  --foreground-disabled: #525252;
+  --foreground-on-brand: #ffffff;
+
+  --ring: #818cf8;
+
+  --success: #22c55e;
+  --success-subtle: rgb(34 197 94 / 0.16);
+  --warning: #f59e0b;
+  --warning-subtle: rgb(245 158 11 / 0.16);
+  --danger: #ef4444;
+  --danger-subtle: rgb(239 68 68 / 0.16);
+  --info: #3b82f6;
+  --info-subtle: rgb(59 130 246 / 0.16);
+
+  --hue-blue: #60a5fa;
+  --hue-blue-subtle: rgb(59 130 246 / 0.16);
+  --hue-purple: #c084fc;
+  --hue-purple-subtle: rgb(168 85 247 / 0.16);
+  --hue-emerald: #34d399;
+  --hue-emerald-subtle: rgb(16 185 129 / 0.16);
+  --hue-sky: #38bdf8;
+  --hue-sky-subtle: rgb(14 165 233 / 0.16);
+  --hue-yellow: #facc15;
+  --hue-yellow-subtle: rgb(234 179 8 / 0.16);
+  --hue-slate: #94a3b8;
+  --hue-slate-subtle: rgb(100 116 139 / 0.16);
+  --hue-orange: #fb923c;
+  --hue-orange-subtle: rgb(249 115 22 / 0.16);
+  --hue-amber: #fbbf24;
+  --hue-amber-subtle: rgb(245 158 11 / 0.16);
+  --hue-cyan: #22d3ee;
+  --hue-cyan-subtle: rgb(6 182 212 / 0.16);
+  --hue-green: #4ade80;
+  --hue-green-subtle: rgb(34 197 94 / 0.16);
+  --hue-red: #f87171;
+  --hue-red-subtle: rgb(239 68 68 / 0.16);
+  --hue-violet: #a78bfa;
+  --hue-violet-subtle: rgb(139 92 246 / 0.16);
+  --hue-rose: #fb7185;
+  --hue-rose-subtle: rgb(244 63 94 / 0.16);
+  --hue-pink: #f472b6;
+  --hue-pink-subtle: rgb(236 72 153 / 0.16);
+  --hue-gray: #9ca3af;
+  --hue-gray-subtle: rgb(107 114 128 / 0.16);
+
+  /* Chart categorical palette — dark-surface steps of the same 8 hues. */
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-6: #008300;
+  --chart-7: #9085e9;
+  --chart-8: #e66767;
+
+  /* Brand-tinted shadows barely read on dark surfaces — use deeper,
+     higher-opacity black instead so cards still separate from canvas. */
+  --elevation-1: 0 1px 2px rgb(0 0 0 / 0.3);
+  --elevation-2: 0 4px 12px rgb(0 0 0 / 0.4);
+  --elevation-3: 0 12px 24px rgb(0 0 0 / 0.5);
+  --elevation-4: 0 24px 48px rgb(0 0 0 / 0.6);
+  --elevation-5: 0 32px 64px rgb(0 0 0 / 0.7);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-tertiary: var(--foreground-tertiary);
+  --color-foreground-disabled: var(--foreground-disabled);
+  --color-foreground-on-brand: var(--foreground-on-brand);
+
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-warning: var(--warning);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-danger: var(--danger);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-info: var(--info);
+  --color-info-subtle: var(--info-subtle);
+
+  --color-hue-blue: var(--hue-blue);
+  --color-hue-blue-subtle: var(--hue-blue-subtle);
+  --color-hue-purple: var(--hue-purple);
+  --color-hue-purple-subtle: var(--hue-purple-subtle);
+  --color-hue-emerald: var(--hue-emerald);
+  --color-hue-emerald-subtle: var(--hue-emerald-subtle);
+  --color-hue-sky: var(--hue-sky);
+  --color-hue-sky-subtle: var(--hue-sky-subtle);
+  --color-hue-yellow: var(--hue-yellow);
+  --color-hue-yellow-subtle: var(--hue-yellow-subtle);
+  --color-hue-slate: var(--hue-slate);
+  --color-hue-slate-subtle: var(--hue-slate-subtle);
+  --color-hue-orange: var(--hue-orange);
+  --color-hue-orange-subtle: var(--hue-orange-subtle);
+  --color-hue-amber: var(--hue-amber);
+  --color-hue-amber-subtle: var(--hue-amber-subtle);
+  --color-hue-cyan: var(--hue-cyan);
+  --color-hue-cyan-subtle: var(--hue-cyan-subtle);
+  --color-hue-green: var(--hue-green);
+  --color-hue-green-subtle: var(--hue-green-subtle);
+  --color-hue-red: var(--hue-red);
+  --color-hue-red-subtle: var(--hue-red-subtle);
+  --color-hue-violet: var(--hue-violet);
+  --color-hue-violet-subtle: var(--hue-violet-subtle);
+  --color-hue-rose: var(--hue-rose);
+  --color-hue-rose-subtle: var(--hue-rose-subtle);
+  --color-hue-pink: var(--hue-pink);
+  --color-hue-pink-subtle: var(--hue-pink-subtle);
+  --color-hue-gray: var(--hue-gray);
+  --color-hue-gray-subtle: var(--hue-gray-subtle);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+
+  --shadow-elevation-1: var(--elevation-1);
+  --shadow-elevation-2: var(--elevation-2);
+  --shadow-elevation-3: var(--elevation-3);
+  --shadow-elevation-4: var(--elevation-4);
+  --shadow-elevation-5: var(--elevation-5);
+}
+
+@theme {
+  /* Brand (indigo) — docs/08_Design_System.md §2.1 */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+  --color-brand-950: #1e1b4b;
+
+  /* Accent (coral) — reserved for streaks/celebrations, never primary actions */
+  --color-accent-50: #fff5f3;
+  --color-accent-100: #ffe8e3;
+  --color-accent-200: #ffd0c7;
+  --color-accent-300: #ffb0a0;
+  --color-accent-400: #fc8b76;
+  --color-accent-500: #f97066;
+  --color-accent-600: #e6564b;
+  --color-accent-700: #c2413a;
+  --color-accent-800: #9c3630;
+  --color-accent-900: #7e332f;
+  --color-accent-950: #451815;
+
+  /* Neutral — true gray, no blue/warm tint */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0c;
+
+  /* Radius — docs/08_Design_System.md §5 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+
+  /* Typography — docs/08_Design_System.md §3. Self-hosted Inter Variable,
+     see src/styles/globals.css for the @fontsource import. */
+  --font-sans:
+    'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+
+  --text-display: clamp(2rem, 1.7rem + 1.5vw, 2.75rem);
+  --text-display--line-height: 1.1;
+  --text-h1: clamp(1.625rem, 1.45rem + 0.9vw, 2rem);
+  --text-h1--line-height: 1.2;
+  --text-h2: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-h2--line-height: 1.25;
+  --text-h3: clamp(1.0625rem, 1.02rem + 0.2vw, 1.125rem);
+  --text-h3--line-height: 1.3;
+  --text-body: clamp(0.9375rem, 0.92rem + 0.1vw, 1rem);
+  --text-body--line-height: 1.5;
+  --text-body-sm: clamp(0.8125rem, 0.8rem + 0.1vw, 0.875rem);
+  --text-body-sm--line-height: 1.45;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  /* No fixed "numeral" size token — docs/08 §3 calls it context-dependent.
+     Apply the `tabular-nums` utility alongside whatever size utility is
+     already in use (e.g. `text-h2 tabular-nums`) for streaks/amounts/stats. */
+}

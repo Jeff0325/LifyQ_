@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lifyq-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "--port", "43117", "--strictPort"],
+      "port": 43117
+    },
+    {
+      "name": "lifyq-preview",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["preview", "--port", "43118", "--strictPort"],
+      "port": 43118
+    }
+  ]
+}
