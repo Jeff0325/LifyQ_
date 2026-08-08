@@ -32,16 +32,23 @@ interface AuthState {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
   updatePassword: (newPassword: string) => Promise<AuthResult>;
+  /** Redirects the browser to Google's consent screen — there's no local
+   * result to return; the app reloads at `redirectTo` once Google/Supabase
+   * finish, and `onAuthStateChange` picks up the new session from there
+   * same as any other sign-in. Only resolves early (with an error) if
+   * kicking off the redirect itself fails, e.g. the provider isn't enabled
+   * in Supabase yet. */
+  signInWithGoogle: () => Promise<AuthResult>;
 }
 
 /**
- * Real Supabase Auth — email/password now, with `supabase.auth.signInWithOAuth`
- * as the exact same-shape seam for Google/Apple Sign-In later (no store or
- * screen changes needed, just another method here). Session persistence
- * and automatic restoration are handled entirely by the Supabase client
- * itself (`persistSession`/`autoRefreshToken`, both default on) — this
- * store only mirrors whatever `onAuthStateChange` reports, it never reads
- * or writes localStorage directly.
+ * Real Supabase Auth — email/password plus Google via
+ * `supabase.auth.signInWithOAuth`. Apple Sign-In later is the exact same
+ * shape (no store or screen changes needed, just another method here).
+ * Session persistence and automatic restoration are handled entirely by
+ * the Supabase client itself (`persistSession`/`autoRefreshToken`, both
+ * default on) — this store only mirrors whatever `onAuthStateChange`
+ * reports, it never reads or writes localStorage directly.
  */
 export const useAuthStore = create<AuthState>()(() => ({
   session: null,
@@ -105,6 +112,14 @@ export const useAuthStore = create<AuthState>()(() => ({
       password: newPassword,
     });
     if (!error) useAuthStore.setState({ isPasswordRecovery: false });
+    return { error: error?.message ?? null };
+  },
+
+  signInWithGoogle: async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/` },
+    });
     return { error: error?.message ?? null };
   },
 }));

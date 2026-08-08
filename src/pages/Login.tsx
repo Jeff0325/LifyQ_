@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { BrandMark } from '@/components/shared/BrandMark';
 import { Button } from '@/components/ui/button';
@@ -11,16 +11,39 @@ import { useAuthStore } from '@/stores/useAuthStore';
 
 type Mode = 'login' | 'signup' | 'forgot';
 
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4">
+      <path
+        fill="#4285F4"
+        d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.53 5.53 0 0 1-2.4 3.63v3h3.87c2.27-2.09 3.58-5.17 3.58-8.82Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.08.72-2.46 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.28v3.11A11.998 11.998 0 0 0 12 24Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28V6.61H1.28A12 12 0 0 0 0 12c0 1.94.46 3.77 1.28 5.39l3.99-3.11Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.77c1.76 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.28 6.61l3.99 3.11C6.22 6.88 8.87 4.77 12 4.77Z"
+      />
+    </svg>
+  );
+}
+
 /**
  * Real Supabase Auth — email/password Log In, Sign Up, and Forgot
- * Password, all against `useAuthStore`'s `signIn`/`signUp`/
- * `resetPassword`/`updatePassword`. `supabase.auth.signInWithOAuth({
- * provider: 'google' | 'apple' })` is the exact same-shape addition for
- * Google/Apple Sign-In later — this screen wouldn't need to change, just
- * one more button.
+ * Password, plus Google via `useAuthStore.signInWithGoogle`. Apple
+ * Sign-In later is the exact same shape (`signInWithOAuth({ provider:
+ * 'apple' })`) — this screen wouldn't need to change, just one more
+ * button.
  */
 export function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const signIn = useAuthStore((state) => state.signIn);
   const signUp = useAuthStore((state) => state.signUp);
@@ -29,7 +52,13 @@ export function Login() {
   const isPasswordRecovery = useAuthStore((state) => state.isPasswordRecovery);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  const [mode, setMode] = useState<Mode>('login');
+  // `Welcome`'s "Get Started" vs. "I already have an account" buttons pass
+  // which mode to open in via router state — otherwise a first-time visitor
+  // tapping "Get Started" would land on a screen that says "Welcome back",
+  // which is exactly backwards for someone who's never used the app.
+  const [mode, setMode] = useState<Mode>(
+    () => (location.state as { mode?: Mode } | null)?.mode ?? 'login',
+  );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -41,6 +70,19 @@ export function Login() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [recoverySubmitting, setRecoverySubmitting] = useState(false);
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
+
+  const signInWithGoogle = useAuthStore((state) => state.signInWithGoogle);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setGoogleSubmitting(true);
+    const result = await signInWithGoogle();
+    // On success the browser navigates away to Google's consent screen
+    // before this ever resolves — this only fires on failure to start.
+    setGoogleSubmitting(false);
+    if (result.error) setError(result.error);
+  };
 
   // The signup confirmation link redirects here with `?verified=true` (see
   // `useAuthStore.signUp`'s `emailRedirectTo`). Supabase auto-exchanges the
@@ -306,6 +348,30 @@ export function Login() {
               </button>
             ))}
           </div>
+        )}
+
+        {mode !== 'forgot' && (
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              size="lg"
+              className="w-full"
+              disabled={googleSubmitting}
+              onClick={() => void handleGoogleSignIn()}
+            >
+              <GoogleIcon />
+              {googleSubmitting ? 'Please wait…' : 'Continue with Google'}
+            </Button>
+
+            <div className="gap-3 flex items-center">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-caption text-foreground-tertiary">
+                or continue with email
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+          </>
         )}
 
         {resetSent ? (

@@ -69,7 +69,7 @@ export function Welcome() {
         <Button
           size="lg"
           className="w-full"
-          onClick={() => navigate(ROUTES.login)}
+          onClick={() => navigate(ROUTES.login, { state: { mode: 'signup' } })}
         >
           Get Started
         </Button>
@@ -77,7 +77,7 @@ export function Welcome() {
           variant="ghost"
           size="lg"
           className="w-full"
-          onClick={() => navigate(ROUTES.login)}
+          onClick={() => navigate(ROUTES.login, { state: { mode: 'login' } })}
         >
           I already have an account
         </Button>
