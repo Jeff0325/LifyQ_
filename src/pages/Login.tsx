@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ROUTES } from '@/constants/routes';
+import { DURATION, EASE } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -330,23 +332,40 @@ export function Login() {
             aria-label="Login or sign up"
             className="gap-0.5 p-0.5 flex items-center rounded-lg border border-border bg-surface"
           >
-            {(['login', 'signup'] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                role="radio"
-                aria-checked={mode === value}
-                onClick={() => switchMode(value)}
-                className={cn(
-                  'px-3 py-2 duration-base ease-standard font-medium flex flex-1 items-center justify-center rounded-md text-body-sm transition-colors',
-                  mode === value
-                    ? 'bg-brand-600 text-foreground-on-brand'
-                    : 'text-foreground-secondary hover:bg-surface-raised',
-                )}
-              >
-                {value === 'login' ? 'Log In' : 'Sign Up'}
-              </button>
-            ))}
+            {(['login', 'signup'] as const).map((value) => {
+              const active = mode === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => switchMode(value)}
+                  className="min-w-0 relative flex-1"
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="login-mode-selected"
+                      transition={{
+                        duration: DURATION.moderate,
+                        ease: EASE.standard,
+                      }}
+                      className="inset-0 absolute rounded-md bg-linear-to-br from-brand-600 to-brand-700 shadow-elevation-2"
+                    />
+                  )}
+                  <span
+                    className={cn(
+                      'px-3 py-2 duration-base ease-standard font-medium relative flex items-center justify-center rounded-md text-body-sm transition-colors',
+                      active
+                        ? 'text-foreground-on-brand'
+                        : 'text-foreground-secondary hover:bg-surface-raised',
+                    )}
+                  >
+                    {value === 'login' ? 'Log In' : 'Sign Up'}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
 
