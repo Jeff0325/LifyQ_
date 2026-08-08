@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { BrandMark } from '@/components/shared/BrandMark';
 import { Button } from '@/components/ui/button';
@@ -21,11 +21,13 @@ type Mode = 'login' | 'signup' | 'forgot';
  */
 export function Login() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const signIn = useAuthStore((state) => state.signIn);
   const signUp = useAuthStore((state) => state.signUp);
   const resetPassword = useAuthStore((state) => state.resetPassword);
   const updatePassword = useAuthStore((state) => state.updatePassword);
   const isPasswordRecovery = useAuthStore((state) => state.isPasswordRecovery);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
@@ -39,6 +41,39 @@ export function Login() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [recoverySubmitting, setRecoverySubmitting] = useState(false);
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
+
+  // The signup confirmation link redirects here with `?verified=true` (see
+  // `useAuthStore.signUp`'s `emailRedirectTo`). Supabase auto-exchanges the
+  // token in the URL for a session before this component ever mounts, so by
+  // the time we render, the account is already confirmed — this just shows
+  // that explicitly instead of dropping the user on the bare login form.
+  const [emailVerified, setEmailVerified] = useState(
+    () => searchParams.get('verified') === 'true',
+  );
+  useEffect(() => {
+    if (searchParams.get('verified') === 'true') {
+      setSearchParams(
+        (params) => {
+          params.delete('verified');
+          return params;
+        },
+        { replace: true },
+      );
+    }
+    // Only ever needs to run once, on mount — the query param is consumed
+    // immediately above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** Switches auth mode and wipes the form — otherwise a value typed for
+   * Log In silently carries over into Sign Up (and vice versa), which reads
+   * as the two modes not actually being different screens. */
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setEmail('');
+    setPassword('');
+    setError(null);
+  };
 
   const handleUpdatePassword = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -111,6 +146,35 @@ export function Login() {
     // know which.
     navigate(ROUTES.home, { replace: true });
   };
+
+  if (emailVerified) {
+    return (
+      <div className="flex min-h-dvh w-full flex-col items-center justify-center bg-background px-6 py-10 text-center pt-[max(env(safe-area-inset-top),2.5rem)] pb-[max(env(safe-area-inset-bottom),2.5rem)]">
+        <div className="gap-3 flex max-w-sm flex-col items-center">
+          <BrandMark className="size-10" />
+          <h1 className="font-semibold text-h2 text-foreground">
+            Email verified
+          </h1>
+          <p className="text-body-sm text-foreground-secondary">
+            Your account is confirmed and ready to go.
+          </p>
+          <Button
+            className="mt-2"
+            onClick={() => {
+              setEmailVerified(false);
+              if (isAuthenticated) {
+                navigate(ROUTES.home, { replace: true });
+              } else {
+                switchMode('login');
+              }
+            }}
+          >
+            {isAuthenticated ? 'Continue to LifyQ' : 'Back to Log In'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isPasswordRecovery) {
     return (
@@ -190,7 +254,7 @@ export function Login() {
             className="mt-2"
             onClick={() => {
               setConfirmationSent(false);
-              setMode('login');
+              switchMode('login');
             }}
           >
             Back to Log In
@@ -230,10 +294,7 @@ export function Login() {
                 type="button"
                 role="radio"
                 aria-checked={mode === value}
-                onClick={() => {
-                  setMode(value);
-                  setError(null);
-                }}
+                onClick={() => switchMode(value)}
                 className={cn(
                   'px-3 py-2 duration-base ease-standard font-medium flex flex-1 items-center justify-center rounded-md text-body-sm transition-colors',
                   mode === value
@@ -274,7 +335,11 @@ export function Login() {
                     <button
                       type="button"
                       onClick={() => {
+                        // Keeps the already-typed email (useful — that's
+                        // what forgot-mode needs), only the password/error
+                        // are cleared.
                         setMode('forgot');
+                        setPassword('');
                         setError(null);
                       }}
                       className="text-caption text-brand-600 hover:underline"
@@ -322,10 +387,7 @@ export function Login() {
                 type="button"
                 variant="ghost"
                 className="w-full"
-                onClick={() => {
-                  setMode('login');
-                  setError(null);
-                }}
+                onClick={() => switchMode('login')}
               >
                 Back to Log In
               </Button>

@@ -51,8 +51,25 @@ export const useAuthStore = create<AuthState>()(() => ({
   isPasswordRecovery: false,
 
   signUp: async (email, password) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login?verified=true`,
+      },
+    });
+    if (error) return { error: error.message };
+    // Supabase doesn't return an error for an email that's already
+    // registered (avoids leaking which emails exist) — instead the
+    // returned user has an empty `identities` array and no new
+    // confirmation email is actually sent. This is the documented way to
+    // detect it: https://supabase.com/docs/reference/javascript/auth-signup
+    if (data.user && data.user.identities?.length === 0) {
+      return {
+        error: 'An account with this email already exists. Try logging in instead.',
+      };
+    }
+    return { error: null };
   },
 
   signIn: async (email, password) => {
