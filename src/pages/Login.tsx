@@ -369,30 +369,6 @@ export function Login() {
           </div>
         )}
 
-        {mode !== 'forgot' && (
-          <>
-            <Button
-              type="button"
-              variant="secondary"
-              size="lg"
-              className="w-full"
-              disabled={googleSubmitting}
-              onClick={() => void handleGoogleSignIn()}
-            >
-              <GoogleIcon />
-              {googleSubmitting ? 'Please wait…' : 'Continue with Google'}
-            </Button>
-
-            <div className="gap-3 flex items-center">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-caption text-foreground-tertiary">
-                or continue with email
-              </span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-          </>
-        )}
-
         {resetSent ? (
           <p className="text-center text-body-sm text-foreground-secondary">
             If an account exists for <strong>{email}</strong>, a reset link
@@ -478,6 +454,28 @@ export function Login() {
               </Button>
             )}
           </form>
+        )}
+
+        {mode !== 'forgot' && (
+          <>
+            <div className="gap-3 flex items-center">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-caption text-foreground-tertiary">or</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <Button
+              type="button"
+              variant="secondary"
+              size="lg"
+              className="w-full"
+              disabled={googleSubmitting}
+              onClick={() => void handleGoogleSignIn()}
+            >
+              <GoogleIcon />
+              {googleSubmitting ? 'Please wait…' : 'Continue with Google'}
+            </Button>
+          </>
         )}
       </div>
     </div>
